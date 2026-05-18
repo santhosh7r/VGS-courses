@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import {
@@ -355,10 +356,9 @@ export default function CalendarView({
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                   className="min-h-16"
                 />
-                <Input
-                  type="datetime-local"
+                <DateTimePicker
                   value={form.starts_at}
-                  onChange={(e) => setForm((f) => ({ ...f, starts_at: e.target.value }))}
+                  onChange={(v) => setForm((f) => ({ ...f, starts_at: v }))}
                 />
                 {error && <p className="text-xs text-destructive">{error}</p>}
                 <div className="flex gap-2">

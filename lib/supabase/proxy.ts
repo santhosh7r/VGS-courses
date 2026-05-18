@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { authCookieName } from './cookie-names'
 
 /**
  * Runs on every request. Validates the session and — crucially — keeps the
@@ -8,10 +9,21 @@ import { NextResponse, type NextRequest } from 'next/server'
  * Supabase rotates the refresh token whenever the access token is refreshed.
  * The new cookies must reach the browser on EVERY response, including
  * redirects. Returning a bare NextResponse.redirect() drops them and the
- * browser is left holding a stale (already-rotated) token → forced logout.
+ * browser is left holding a stale (already-rotated) token, forcing a logout.
+ *
+ * The admin panel and student app use SEPARATE auth cookies (see
+ * `authCookieName`), so the two sessions can coexist and never overwrite
+ * each other.
  */
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
+  const { pathname } = request.nextUrl
+
+  // Forward the path so server components select the SAME auth cookie
+  // namespace (admin vs student) that we validate here.
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', pathname)
+
+  let supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
 
   // With Fluid compute, don't put this client in a global variable —
   // always create a new one per request.
@@ -19,6 +31,7 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: { name: authCookieName(pathname) },
       cookies: {
         getAll() {
           return request.cookies.getAll()
@@ -27,7 +40,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           )
-          supabaseResponse = NextResponse.next({ request })
+          supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options),
           )
@@ -41,8 +54,6 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-
-  const { pathname } = request.nextUrl
 
   /**
    * Build a redirect that carries over any refreshed auth cookies set during
@@ -70,9 +81,13 @@ export async function updateSession(request: NextRequest) {
     return redirectTo('/admin/login')
   }
 
-  // Authenticated users should not sit on the auth screens — send them in.
+  // Signed-in users must never sit on a login screen — not even after a
+  // Back-button navigation or a refresh. Send them straight into their panel.
   if (user && (pathname === '/auth/login' || pathname === '/auth/sign-up')) {
     return redirectTo('/dashboard')
+  }
+  if (user && pathname === '/admin/login') {
+    return redirectTo('/admin')
   }
 
   // IMPORTANT: return supabaseResponse unchanged so its cookies are preserved.

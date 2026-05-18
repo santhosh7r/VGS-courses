@@ -51,7 +51,9 @@ export default function AdminLoginPage() {
         return
       }
 
-      router.push('/admin')
+      // replace() so the login page is dropped from history — the browser
+      // Back button can never land an admin back on the login screen.
+      router.replace('/admin')
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

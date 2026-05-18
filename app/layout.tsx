@@ -9,9 +9,9 @@ const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono'
 const fraunces = Fraunces({ subsets: ['latin'], variable: '--font-fraunces' })
 
 export const metadata: Metadata = {
-  title: '100x Hub — Premium Learning Platform',
+  title: '100x Hub — Learning Platform by Velozity Global Solutions',
   description:
-    '100x Hub — an elite execution-focused learning platform. Powered by Velozity Global Solutions.',
+    'Become job-ready with execution-first courses on 100x Hub — the learning platform by Velozity Global Solutions. Structured curriculum, real projects and mentor feedback.',
   generator: 'Velozity Global Solutions',
   icons: {
     icon: [
@@ -32,7 +32,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable}`}
+      className={`scroll-smooth ${geistSans.variable} ${geistMono.variable} ${fraunces.variable}`}
     >
       <body className="font-sans antialiased bg-background">
         <ThemeProvider

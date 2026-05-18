@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Trash, CalendarClock, GraduationCap, ClipboardList, Video } from 'lucide-react'
@@ -48,6 +49,8 @@ export default function ScheduleManager({
   })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Bumped after a successful add to remount (and clear) the date/time pickers.
+  const [formKey, setFormKey] = useState(0)
 
   const add = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -80,6 +83,7 @@ export default function ScheduleManager({
     if (data) {
       setEvents((xs) => [...xs, data].sort((a, b) => a.starts_at.localeCompare(b.starts_at)))
       setForm({ title: '', description: '', event_type: 'class', starts_at: '', ends_at: '' })
+      setFormKey((k) => k + 1)
       router.refresh()
     }
   }
@@ -140,21 +144,21 @@ export default function ScheduleManager({
                 className="min-h-20"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Starts</label>
-                <Input
-                  type="datetime-local"
+                <DateTimePicker
+                  key={`starts-${formKey}`}
                   value={form.starts_at}
-                  onChange={(e) => setForm((f) => ({ ...f, starts_at: e.target.value }))}
+                  onChange={(v) => setForm((f) => ({ ...f, starts_at: v }))}
                 />
               </div>
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Ends (optional)</label>
-                <Input
-                  type="datetime-local"
+                <DateTimePicker
+                  key={`ends-${formKey}`}
                   value={form.ends_at}
-                  onChange={(e) => setForm((f) => ({ ...f, ends_at: e.target.value }))}
+                  onChange={(v) => setForm((f) => ({ ...f, ends_at: v }))}
                 />
               </div>
             </div>
