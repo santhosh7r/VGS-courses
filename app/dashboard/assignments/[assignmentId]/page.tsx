@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 import Link from 'next/link'
 import { ArrowLeft, Clock, AlertCircle, CheckCircle2, XCircle, ExternalLink } from 'lucide-react'
 import SubmissionForm from '@/components/dashboard/submission-form'
@@ -95,96 +97,124 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
 
-          {/* Approved */}
-          {status === 'approved' && submission && (
-            <Card className="border-green-600/50">
+          {/* Submission review — what was submitted, status, grade & feedback */}
+          {submission && (
+            <Card
+              className={
+                status === 'approved'
+                  ? 'border-green-600/50'
+                  : status === 'rejected'
+                    ? 'border-destructive/50'
+                    : 'border-blue-500/50'
+              }
+            >
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-green-600">
-                  <CheckCircle2 className="w-5 h-5" />
-                  Approved
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                {submission.points_earned != null && (
-                  <p className="font-medium">
-                    Grade: {submission.points_earned}/{assignment.points_possible} points
-                  </p>
-                )}
-                {submission.feedback && (
-                  <div>
-                    <p className="text-muted-foreground mb-1">Feedback</p>
-                    <p>{submission.feedback}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Submitted — awaiting review */}
-          {status === 'submitted' && submission && (
-            <Card className="border-blue-500/50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-blue-600">
-                  <Clock className="w-5 h-5" />
-                  Submitted — awaiting review
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <p className="text-muted-foreground">
-                  Submitted {format(new Date(submission.submitted_at), 'MMM dd, yyyy')}
-                </p>
-                {submission.link_url && (
-                  <a
-                    href={submission.link_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-primary hover:underline break-all"
-                  >
-                    <ExternalLink className="w-4 h-4 shrink-0" />
-                    {submission.link_url}
-                  </a>
-                )}
-                {submission.content && (
-                  <div className="bg-muted p-3 rounded whitespace-pre-wrap">
-                    {submission.content}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Rejected — show feedback + resubmit form */}
-          {status === 'rejected' && submission && (
-            <>
-              <Card className="border-destructive/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-destructive">
-                    <XCircle className="w-5 h-5" />
-                    Changes Requested
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm">
-                  {submission.feedback ? (
-                    <div>
-                      <p className="text-muted-foreground mb-1">Reviewer feedback</p>
-                      <p>{submission.feedback}</p>
-                    </div>
+                <div className="flex items-start justify-between gap-3">
+                  <CardTitle>Your Submission</CardTitle>
+                  {status === 'approved' ? (
+                    <Badge className="bg-green-600">
+                      <CheckCircle2 className="w-3 h-3" /> Approved
+                    </Badge>
+                  ) : status === 'rejected' ? (
+                    <Badge variant="destructive">
+                      <XCircle className="w-3 h-3" /> Changes requested
+                    </Badge>
                   ) : (
-                    <p className="text-muted-foreground">
-                      Please review your work and resubmit.
-                    </p>
+                    <Badge className="bg-blue-500">
+                      <Clock className="w-3 h-3" /> Awaiting review
+                    </Badge>
                   )}
-                </CardContent>
-              </Card>
-              <SubmissionForm
-                assignmentId={assignmentId}
-                existing={{
-                  id: submission.id,
-                  content: submission.content,
-                  link_url: submission.link_url,
-                }}
-              />
-            </>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <p className="text-xs text-muted-foreground">
+                  Submitted{' '}
+                  {format(new Date(submission.submitted_at), 'MMM dd, yyyy · hh:mm a')}
+                  {submission.graded_at && (
+                    <>
+                      {' · '}reviewed{' '}
+                      {format(new Date(submission.graded_at), 'MMM dd, yyyy')}
+                    </>
+                  )}
+                </p>
+
+                {/* Grade */}
+                {submission.points_earned != null && (
+                  <div className="rounded-lg border border-border p-4">
+                    <p className="text-xs text-muted-foreground mb-1">Grade</p>
+                    <p className="text-2xl font-bold">
+                      {submission.points_earned}
+                      <span className="text-base text-muted-foreground">
+                        {' '}
+                        / {assignment.points_possible} points
+                      </span>
+                    </p>
+                    <Progress
+                      className="mt-2"
+                      value={
+                        assignment.points_possible
+                          ? Math.round(
+                              (submission.points_earned / assignment.points_possible) * 100
+                            )
+                          : 0
+                      }
+                    />
+                  </div>
+                )}
+
+                {/* Reviewer feedback */}
+                {submission.feedback ? (
+                  <div>
+                    <p className="text-muted-foreground mb-1">Reviewer feedback</p>
+                    <div className="bg-muted p-3 rounded whitespace-pre-wrap">
+                      {submission.feedback}
+                    </div>
+                  </div>
+                ) : (
+                  status === 'rejected' && (
+                    <p className="text-muted-foreground">
+                      Please review your work and resubmit below.
+                    </p>
+                  )
+                )}
+
+                {/* What the student submitted */}
+                <div className="space-y-2">
+                  <p className="text-muted-foreground">What you submitted</p>
+                  {submission.link_url && (
+                    <a
+                      href={submission.link_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-primary hover:underline break-all"
+                    >
+                      <ExternalLink className="w-4 h-4 shrink-0" />
+                      {submission.link_url}
+                    </a>
+                  )}
+                  {submission.content && (
+                    <div className="bg-muted p-3 rounded whitespace-pre-wrap">
+                      {submission.content}
+                    </div>
+                  )}
+                  {!submission.link_url && !submission.content && (
+                    <p className="text-muted-foreground italic">No content provided.</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Rejected — let the student fix and resubmit */}
+          {status === 'rejected' && submission && (
+            <SubmissionForm
+              assignmentId={assignmentId}
+              existing={{
+                id: submission.id,
+                content: submission.content,
+                link_url: submission.link_url,
+              }}
+            />
           )}
 
           {/* No submission yet */}

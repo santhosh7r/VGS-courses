@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
-import { CheckCircle, Clock, FileText, HelpCircle, Layers } from 'lucide-react'
-import LessonList from '@/components/dashboard/lesson-list'
+import { CheckCircle, Clock, FileText, HelpCircle } from 'lucide-react'
+import ModuleAccordion from '@/components/dashboard/module-accordion'
 
 interface PageProps {
   params: Promise<{ courseId: string }>
@@ -56,12 +57,21 @@ export default async function CourseDetailPage({ params }: PageProps) {
     )
   }
 
-  const { data: attempts } = await supabase
-    .from('quiz_attempts')
-    .select('quiz_id, score, total')
-    .eq('student_id', user.id)
+  const [{ data: attempts }, { data: submissions }] = await Promise.all([
+    supabase
+      .from('quiz_attempts')
+      .select('quiz_id, score, total')
+      .eq('student_id', user.id),
+    supabase
+      .from('submissions')
+      .select('assignment_id, status, points_earned')
+      .eq('student_id', user.id),
+  ])
 
   const attemptMap = new Map((attempts || []).map((a: any) => [a.quiz_id, a]))
+  const submissionMap = new Map(
+    (submissions || []).map((s: any) => [s.assignment_id, s])
+  )
 
   const lessons = (course.lessons || []).sort(
     (a: any, b: any) => a.order_index - b.order_index
@@ -73,16 +83,20 @@ export default async function CourseDetailPage({ params }: PageProps) {
   const quizzes = course.quizzes || []
 
   // Group lessons by module (module-less lessons go in their own group).
-  const groups: { title: string | null; lessons: any[] }[] = []
+  const groups: { id: string; title: string | null; lessons: any[] }[] = []
   for (const m of modules) {
     const ls = lessons.filter((l: any) => l.module_id === m.id)
-    if (ls.length) groups.push({ title: m.title, lessons: ls })
+    if (ls.length) groups.push({ id: m.id, title: m.title, lessons: ls })
   }
   const ungrouped = lessons.filter(
     (l: any) => !l.module_id || !modules.some((m: any) => m.id === l.module_id)
   )
   if (ungrouped.length) {
-    groups.push({ title: modules.length ? 'Other Lessons' : null, lessons: ungrouped })
+    groups.push({
+      id: 'ungrouped',
+      title: modules.length ? 'Other Lessons' : null,
+      lessons: ungrouped,
+    })
   }
 
   return (
@@ -106,19 +120,15 @@ export default async function CourseDetailPage({ params }: PageProps) {
           <TabsTrigger value="quizzes">Quizzes</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="lessons" className="space-y-8">
+        <TabsContent value="lessons" className="space-y-4">
+          {modules.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              Lessons are organised into {modules.length} module
+              {modules.length !== 1 ? 's' : ''} — click a module to see its lessons.
+            </p>
+          )}
           {groups.length > 0 ? (
-            groups.map((g, i) => (
-              <div key={i} className="space-y-4">
-                {g.title && (
-                  <h2 className="flex items-center gap-2 text-lg font-semibold">
-                    <Layers className="w-4 h-4 text-primary" />
-                    {g.title}
-                  </h2>
-                )}
-                <LessonList lessons={g.lessons} courseId={courseId} />
-              </div>
-            ))
+            <ModuleAccordion groups={groups} courseId={courseId} />
           ) : (
             <Card>
               <CardHeader>
@@ -132,23 +142,34 @@ export default async function CourseDetailPage({ params }: PageProps) {
         <TabsContent value="assignments">
           {assignments.length > 0 ? (
             <div className="space-y-4">
-              {assignments.map((assignment: any) => (
-                <Card key={assignment.id}>
-                  <CardHeader>
-                    <CardTitle className="line-clamp-1">{assignment.title}</CardTitle>
-                    <CardDescription className="line-clamp-2">
-                      {assignment.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button asChild>
-                      <Link href={`/dashboard/assignments/${assignment.id}`}>
-                        View Assignment
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+              {assignments.map((assignment: any) => {
+                const sub = submissionMap.get(assignment.id)
+                return (
+                  <Card key={assignment.id}>
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-3">
+                        <CardTitle className="line-clamp-1">{assignment.title}</CardTitle>
+                        <AssignmentStatusBadge status={sub?.status} />
+                      </div>
+                      <CardDescription className="line-clamp-2">
+                        {assignment.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {sub?.status === 'approved' && sub.points_earned != null && (
+                        <p className="text-sm font-medium text-green-600">
+                          Graded — {sub.points_earned} point{sub.points_earned !== 1 ? 's' : ''}
+                        </p>
+                      )}
+                      <Button asChild>
+                        <Link href={`/dashboard/assignments/${assignment.id}`}>
+                          {sub ? 'View Submission & Feedback' : 'View Assignment'}
+                        </Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           ) : (
             <Card>
@@ -172,11 +193,20 @@ export default async function CourseDetailPage({ params }: PageProps) {
                         {quiz.description}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-3">
                       {done ? (
-                        <p className="text-sm text-green-600 font-medium">
-                          ✓ Completed — scored {done.score}/{done.total}
-                        </p>
+                        <>
+                          <p className="text-sm font-medium text-green-600">
+                            ✓ Completed — scored {done.score}/{done.total}
+                            {done.total > 0 &&
+                              ` (${Math.round((done.score / done.total) * 100)}%)`}
+                          </p>
+                          <Button asChild variant="outline">
+                            <Link href={`/dashboard/quizzes/${quiz.id}`}>
+                              View Results & Answers
+                            </Link>
+                          </Button>
+                        </>
                       ) : (
                         <Button asChild>
                           <Link href={`/dashboard/quizzes/${quiz.id}`}>Take Quiz</Link>
@@ -197,6 +227,25 @@ export default async function CourseDetailPage({ params }: PageProps) {
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+function AssignmentStatusBadge({ status }: { status?: string }) {
+  if (status === 'approved') {
+    return <Badge className="bg-green-600 shrink-0">Approved</Badge>
+  }
+  if (status === 'submitted') {
+    return (
+      <Badge className="bg-blue-500 shrink-0">Awaiting review</Badge>
+    )
+  }
+  if (status === 'rejected') {
+    return <Badge variant="destructive" className="shrink-0">Changes requested</Badge>
+  }
+  return (
+    <Badge variant="outline" className="shrink-0 text-muted-foreground">
+      Not submitted
+    </Badge>
   )
 }
 

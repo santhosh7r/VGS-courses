@@ -3,12 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Pencil } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Trophy, BarChart3 } from 'lucide-react'
 import LessonManager from '@/components/dashboard/lesson-manager'
 import AssignmentManager from '@/components/dashboard/assignment-manager'
 import CourseSettingsForm from '@/components/admin/course-settings-form'
 import ModuleManager from '@/components/admin/module-manager'
 import ScheduleManager from '@/components/admin/schedule-manager'
+import LeaderboardTable from '@/components/leaderboard-table'
 
 interface PageProps {
   params: Promise<{ courseId: string }>
@@ -24,10 +25,10 @@ export default async function CourseEditorPage({ params }: PageProps) {
       `
       id, title, description, duration_weeks,
       modules ( id, title, order_index ),
-      lessons ( id, title, is_published, order_index ),
+      lessons ( id, title, is_published, order_index, module_id ),
       assignments ( id, title, is_published, order_index ),
       quizzes ( id, title, is_published ),
-      students ( id, full_name, email )
+      students ( id, full_name, email, xp, streak )
     `
     )
     .eq('id', courseId)
@@ -60,6 +61,9 @@ export default async function CourseEditorPage({ params }: PageProps) {
   const assignments = course.assignments?.sort((a, b) => a.order_index - b.order_index) || []
   const quizzes = course.quizzes || []
   const students = course.students || []
+  const leaderboard = [...students].sort(
+    (a: any, b: any) => (b.xp ?? 0) - (a.xp ?? 0) || (b.streak ?? 0) - (a.streak ?? 0)
+  )
 
   return (
     <div className="p-8">
@@ -83,6 +87,7 @@ export default async function CourseEditorPage({ params }: PageProps) {
           <TabsTrigger value="modules">Modules ({modules.length})</TabsTrigger>
           <TabsTrigger value="schedule">Schedule ({scheduleEvents?.length || 0})</TabsTrigger>
           <TabsTrigger value="students">Students ({students.length})</TabsTrigger>
+          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -128,19 +133,27 @@ export default async function CourseEditorPage({ params }: PageProps) {
               <div className="space-y-3">
                 {quizzes.map((q: any) => (
                   <Card key={q.id}>
-                    <CardContent className="flex items-center justify-between py-4">
+                    <CardContent className="flex items-center justify-between gap-3 py-4">
                       <div>
                         <p className="font-medium">{q.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {q.is_published ? 'Published' : 'Draft'}
                         </p>
                       </div>
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/admin/quizzes/${q.id}`}>
-                          <Pencil className="w-4 h-4 mr-2" />
-                          Edit
-                        </Link>
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/admin/quizzes/${q.id}/results`}>
+                            <BarChart3 className="w-4 h-4 mr-2" />
+                            Results
+                          </Link>
+                        </Button>
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/admin/quizzes/${q.id}`}>
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Edit
+                          </Link>
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -159,7 +172,7 @@ export default async function CourseEditorPage({ params }: PageProps) {
         </TabsContent>
 
         <TabsContent value="modules">
-          <ModuleManager courseId={courseId} modules={modules} />
+          <ModuleManager courseId={courseId} modules={modules} lessons={lessons} />
         </TabsContent>
 
         <TabsContent value="schedule">
@@ -202,6 +215,27 @@ export default async function CourseEditorPage({ params }: PageProps) {
                   No students assigned to this course yet.
                 </p>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="leaderboard">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-yellow-500" />
+                Student Leaderboard
+              </CardTitle>
+              <CardDescription>
+                Students in this course ranked by XP — the same ranking students see on
+                their dashboard.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LeaderboardTable
+                rows={leaderboard}
+                emptyMessage="No students assigned to this course yet."
+              />
             </CardContent>
           </Card>
         </TabsContent>

@@ -2,8 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import QuizTaker from '@/components/dashboard/quiz-taker'
+import QuizReview from '@/components/dashboard/quiz-review'
+import { format } from 'date-fns'
 
 interface PageProps {
   params: Promise<{ quizId: string }>
@@ -44,17 +46,20 @@ export default async function TakeQuizPage({ params }: PageProps) {
 
   const { data: attempt } = await supabase
     .from('quiz_attempts')
-    .select('score, total, completed_at')
+    .select('score, total, answers, completed_at')
     .eq('quiz_id', quizId)
     .eq('student_id', user.id)
     .maybeSingle()
 
-  // Strip the answer key before anything reaches the browser.
   const rawQuestions: any[] = Array.isArray(quiz.questions) ? quiz.questions : []
+  // Strip the answer key before anything reaches the browser (taking the quiz).
   const safeQuestions = rawQuestions.map((q: any) => ({
     question: q.question,
     options: q.options,
   }))
+  const attemptAnswers: number[] = Array.isArray(attempt?.answers)
+    ? (attempt!.answers as number[])
+    : []
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -78,23 +83,22 @@ export default async function TakeQuizPage({ params }: PageProps) {
 
       <div className="max-w-2xl">
         {attempt ? (
-          <Card className="border-green-600/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-green-600">
-                <CheckCircle2 className="w-5 h-5" />
-                Already Completed
-              </CardTitle>
-              <CardDescription>You have already taken this quiz.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">
-                {attempt.score} / {attempt.total}
-              </p>
-              <Button asChild className="mt-4">
-                <Link href={`/dashboard/courses/${quiz.course_id}`}>Back to Course</Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Completed {format(new Date(attempt.completed_at), 'MMM dd, yyyy · hh:mm a')} ·
+              you can review your answers below.
+            </p>
+            <QuizReview
+              questions={rawQuestions}
+              answers={attemptAnswers}
+              score={attempt.score}
+              total={attempt.total}
+              xpReward={quiz.xp_reward}
+            />
+            <Button asChild variant="outline">
+              <Link href={`/dashboard/courses/${quiz.course_id}`}>Back to Course</Link>
+            </Button>
+          </div>
         ) : safeQuestions.length > 0 ? (
           <QuizTaker quizId={quiz.id} questions={safeQuestions} />
         ) : (
