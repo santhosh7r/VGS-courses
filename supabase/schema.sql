@@ -3,9 +3,11 @@
 -- Supabase / PostgreSQL schema  ·  course-centric LMS, 2 user types
 -- ----------------------------------------------------------------------------
 -- DATA MODEL
---   admins   — controllers of the platform.
---   students — learners. Each is assigned ONE course; suspended students lose
---              all access. XP / streaks / activity power the gamification.
+--   admins           — controllers of the platform.
+--   allowed_students — emails an admin has approved for signup (the gate).
+--   students         — learners who have signed up. Each is assigned ONE
+--                      course; suspended students lose all access. XP /
+--                      streaks / activity power the gamification.
 --   No instructors, no other roles.
 --
 -- HOW TO APPLY
@@ -15,8 +17,11 @@
 --
 --   Admin login:  admin@eduhub.com  /  Admin@12345   (login at /admin/login)
 --
---   ALSO turn OFF  Authentication → Sign In/Providers → Email → "Confirm email"
---   so students can sign in immediately (and to avoid email rate limits).
+--   ALSO in the Supabase dashboard:
+--     - Authentication → Sign In/Providers → Email → turn OFF "Confirm email"
+--       (the allowlist is the gate; students can sign in immediately).
+--     - Authentication → Sign In/Providers → enable the Google provider, so
+--       students can sign up / in with Google.
 -- ============================================================================
 
 create extension if not exists pgcrypto with schema extensions;
@@ -26,9 +31,23 @@ drop table if exists public.progress      cascade;
 drop table if exists public.enrollments   cascade;
 drop table if exists public.cohorts       cascade;
 drop table if exists public.organizations cascade;
-drop table if exists public.profiles      cascade;
 drop function if exists public.current_user_role() cascade;
 drop function if exists public.is_instructor()      cascade;
+
+-- `profiles` was a TABLE in the old cohort schema; this schema now exposes it
+-- as a VIEW (created near the end). Drop it only when it's still a base table,
+-- so re-running this file doesn't choke on the existing view.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'profiles'
+      and table_type = 'BASE TABLE'
+  ) then
+    drop table public.profiles cascade;
+  end if;
+end;
+$$;
 
 -- ============================================================================
 -- HELPER — auto-maintain `updated_at`
@@ -69,6 +88,27 @@ create table if not exists public.students (
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+
+-- ----------------------------------------------------------------------------
+-- ALLOWLIST — admin-approved emails (the gate for self-signup)
+-- ----------------------------------------------------------------------------
+-- There is NO open sign-up. An admin adds a student's email here first; only
+-- then can that person create an account — with Google OR email + password.
+-- The handle_new_user() trigger enforces this; see AUTH TRIGGERS below.
+create table if not exists public.allowed_students (
+  id          uuid primary key default gen_random_uuid(),
+  email       text not null,
+  full_name   text not null default '',
+  course_id   uuid references public.courses (id) on delete set null,
+  batch       text,
+  added_by    uuid references auth.users (id) on delete set null,
+  claimed_by  uuid references auth.users (id) on delete set null,
+  claimed_at  timestamptz,
+  created_at  timestamptz not null default now()
+);
+-- One allowlist entry per email, matched case-insensitively.
+create unique index if not exists idx_allowed_students_email
+  on public.allowed_students (lower(email));
 
 -- Lesson groupings within a course.
 create table if not exists public.modules (
@@ -180,6 +220,9 @@ alter table public.students    add column if not exists onboarding_completed  bo
 -- Admin annotations (Phase C)
 alter table public.students    add column if not exists admin_notes          text;
 alter table public.students    add column if not exists tags                 text[] not null default '{}';
+-- Admin-controlled onboarding / invite flow (Phase D)
+alter table public.students    add column if not exists batch                text;
+alter table public.students    add column if not exists role                 text not null default 'student';
 
 alter table public.submissions add column if not exists status      text not null default 'submitted';
 alter table public.submissions add column if not exists xp_awarded  integer not null default 0;
@@ -385,6 +428,9 @@ $$;
 create or replace function public.auto_confirm_user()
 returns trigger language plpgsql security definer as $$
 begin
+  -- The allowlist is the gate, not an email-verification step — so every new
+  -- account is confirmed immediately and can sign in straight away. (Google
+  -- accounts already arrive confirmed; this covers email + password signups.)
   if new.email_confirmed_at is null then
     new.email_confirmed_at := now();
   end if;
@@ -397,27 +443,60 @@ create trigger auto_confirm_on_signup
   before insert on auth.users
   for each row execute function public.auto_confirm_user();
 
+-- Runs after every auth.users INSERT. For students it enforces the allowlist:
+-- the email MUST already exist in public.allowed_students, otherwise this
+-- raises — which rolls back the auth.users INSERT, so the account is never
+-- created. This is the single gate for BOTH Google and email+password signup.
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare
   meta      jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
-  full_name text  := coalesce(
+  meta_name text  := coalesce(
     nullif(meta->>'full_name', ''),
     nullif(meta->>'name', ''),
     nullif(trim(coalesce(meta->>'first_name', '') || ' ' || coalesce(meta->>'last_name', '')), ''),
     split_part(coalesce(new.email, ''), '@', 1),
     ''
   );
+  v_allowed public.allowed_students%rowtype;
 begin
+  -- Admins are provisioned directly (DB seed / explicit metadata) and skip
+  -- the allowlist gate entirely.
   if coalesce(meta->>'account_type', 'student') = 'admin' then
     insert into public.admins (id, email, full_name)
-    values (new.id, new.email, coalesce(nullif(full_name, ''), 'Administrator'))
+    values (new.id, new.email, coalesce(nullif(meta_name, ''), 'Administrator'))
     on conflict (id) do nothing;
-  else
-    insert into public.students (id, email, full_name)
-    values (new.id, new.email, full_name)
-    on conflict (id) do nothing;
+    return new;
   end if;
+
+  -- Students must be pre-approved. Match the email case-insensitively against
+  -- the allowlist; no match => reject the signup (rolls this INSERT back).
+  select * into v_allowed
+  from public.allowed_students
+  where lower(email) = lower(coalesce(new.email, ''));
+
+  if not found then
+    raise exception 'EMAIL_NOT_APPROVED: % is not on the student allowlist', new.email
+      using hint = 'An admin must add this email before the account can be created.';
+  end if;
+
+  -- Approved — create the student, seeding course / batch / name from the
+  -- admin-entered allowlist row.
+  insert into public.students (id, email, full_name, course_id, batch)
+  values (
+    new.id,
+    new.email,
+    coalesce(nullif(v_allowed.full_name, ''), meta_name),
+    v_allowed.course_id,
+    v_allowed.batch
+  )
+  on conflict (id) do nothing;
+
+  -- Record who claimed the allowlist entry (audit trail).
+  update public.allowed_students
+     set claimed_by = new.id, claimed_at = now()
+   where id = v_allowed.id;
+
   return new;
 end;
 $$;
@@ -578,6 +657,7 @@ create trigger on_quiz_attempt_insert
 -- ============================================================================
 alter table public.admins             enable row level security;
 alter table public.students           enable row level security;
+alter table public.allowed_students   enable row level security;
 alter table public.courses            enable row level security;
 alter table public.modules            enable row level security;
 alter table public.lessons            enable row level security;
@@ -599,10 +679,10 @@ begin
   for r in
     select policyname, tablename from pg_policies
     where schemaname = 'public'
-      and tablename in ('admins','students','courses','modules','lessons','lesson_resources',
-                        'assignments','submissions','quizzes','quiz_attempts','activity_log',
-                        'lesson_progress','notifications','achievements','student_achievements',
-                        'calendar_events')
+      and tablename in ('admins','students','allowed_students','courses','modules','lessons',
+                        'lesson_resources','assignments','submissions','quizzes','quiz_attempts',
+                        'activity_log','lesson_progress','notifications','achievements',
+                        'student_achievements','calendar_events')
   loop
     execute format('drop policy if exists %I on public.%I;', r.policyname, r.tablename);
   end loop;
@@ -625,6 +705,13 @@ create policy "students admin updates"
   using (public.is_admin()) with check (public.is_admin());
 create policy "students admin deletes"
   on public.students for delete to authenticated using (public.is_admin());
+
+-- ---- allowed_students (the signup allowlist) -------------------------------
+-- Only admins ever touch this directly. The signup gate reads it through a
+-- SECURITY DEFINER trigger, which bypasses RLS.
+create policy "allowed_students admin manages"
+  on public.allowed_students for all to authenticated
+  using (public.is_admin()) with check (public.is_admin());
 
 -- ---- courses ---------------------------------------------------------------
 create policy "courses admin all student own"
@@ -776,6 +863,27 @@ create policy "calendar student updates own"
 create policy "calendar student deletes own"
   on public.calendar_events for delete to authenticated
   using (owner_student_id = auth.uid());
+
+-- ============================================================================
+-- PROFILES VIEW
+-- ----------------------------------------------------------------------------
+-- `students` IS the student profile table for this platform. This view simply
+-- exposes it under the spec-named `profiles` with the requested columns
+-- (id, full_name, email, role, course, batch, onboarding_completed,
+-- created_at). `security_invoker` makes it follow the same RLS as `students`.
+-- ============================================================================
+create or replace view public.profiles
+  with (security_invoker = on) as
+select
+  id,
+  full_name,
+  email,
+  role,
+  course_id            as course,
+  batch,
+  onboarding_completed,
+  created_at
+from public.students;
 
 -- ============================================================================
 -- SEED — achievement catalogue

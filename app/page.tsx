@@ -289,12 +289,9 @@ export default function Home() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            <Button asChild variant="ghost" className="hidden sm:inline-flex">
-              <Link href="/auth/login">Sign In</Link>
-            </Button>
             <Button asChild>
-              <Link href="/auth/sign-up">
-                Get Started
+              <Link href="/auth/login">
+                Sign In
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -354,8 +351,8 @@ export default function Home() {
 
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button asChild size="lg" className="w-full sm:w-auto">
-                <Link href="/auth/sign-up">
-                  Start Learning Free
+                <Link href="/auth/login">
+                  Sign In
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -370,7 +367,7 @@ export default function Home() {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-primary" />
-                No credit card required
+                Invite-based access
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -572,8 +569,8 @@ export default function Home() {
               ))}
             </ul>
             <Button asChild size="lg" className="mt-9">
-              <Link href="/auth/sign-up">
-                Create your free account
+              <Link href="/auth/login">
+                Sign in to your account
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -793,8 +790,8 @@ export default function Home() {
               </p>
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button asChild size="lg" className="w-full sm:w-auto">
-                  <Link href="/auth/sign-up">
-                    Get Started Free
+                  <Link href="/auth/login">
+                    Sign In
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -868,7 +865,7 @@ export default function Home() {
                   </a>
                 </li>
                 <li>
-                  <Link href="/auth/sign-up" className="transition-colors hover:text-foreground">
+                  <Link href="/auth/login" className="transition-colors hover:text-foreground">
                     Get Started
                   </Link>
                 </li>

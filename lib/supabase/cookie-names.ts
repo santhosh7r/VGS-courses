@@ -8,5 +8,7 @@ export const ADMIN_AUTH_COOKIE = 'sb-vgs-admin'
 
 /** Admin paths use the admin cookie; every other path uses the student cookie. */
 export function authCookieName(pathname: string): string {
-  return pathname.startsWith('/admin') ? ADMIN_AUTH_COOKIE : STUDENT_AUTH_COOKIE
+  const isAdminArea =
+    pathname.startsWith('/admin') || pathname.startsWith('/api/admin')
+  return isAdminArea ? ADMIN_AUTH_COOKIE : STUDENT_AUTH_COOKIE
 }

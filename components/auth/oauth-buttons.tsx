@@ -10,6 +10,9 @@ import { Button } from '@/components/ui/button'
  * The flow: signInWithOAuth() sends the browser to Google, Google sends it
  * back to /auth/callback?code=..., and that route exchanges the code for a
  * session before redirecting to `next`.
+ *
+ * On sign-up this is still gated: the handle_new_user trigger rejects any
+ * Google account whose email is not on the admin allowlist.
  */
 export default function OAuthButtons({ next = '/dashboard' }: { next?: string }) {
   const [loading, setLoading] = useState(false)
