@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
-import { CheckCircle, Clock, FileText, HelpCircle } from 'lucide-react'
+import { CheckCircle, Clock, FileText, HelpCircle, Layers } from 'lucide-react'
+import LessonList from '@/components/dashboard/lesson-list'
 import ModuleAccordion from '@/components/dashboard/module-accordion'
 
 interface PageProps {
@@ -106,8 +107,9 @@ export default async function CourseDetailPage({ params }: PageProps) {
         <p className="text-muted-foreground mt-2">{course.description}</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         <Stat icon={<Clock className="w-5 h-5 text-primary" />} label="Duration" value={`${course.duration_weeks || 8} wks`} />
+        <Stat icon={<Layers className="w-5 h-5 text-primary" />} label="Modules" value={modules.length} />
         <Stat icon={<FileText className="w-5 h-5 text-primary" />} label="Lessons" value={lessons.length} />
         <Stat icon={<CheckCircle className="w-5 h-5 text-primary" />} label="Assignments" value={assignments.length} />
         <Stat icon={<HelpCircle className="w-5 h-5 text-primary" />} label="Quizzes" value={quizzes.length} />
@@ -116,24 +118,42 @@ export default async function CourseDetailPage({ params }: PageProps) {
       <Tabs defaultValue="lessons" className="space-y-6">
         <TabsList>
           <TabsTrigger value="lessons">Lessons</TabsTrigger>
+          <TabsTrigger value="modules">Modules</TabsTrigger>
           <TabsTrigger value="assignments">Assignments</TabsTrigger>
           <TabsTrigger value="quizzes">Quizzes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="lessons" className="space-y-4">
-          {modules.length > 0 && (
-            <p className="text-sm text-muted-foreground">
-              Lessons are organised into {modules.length} module
-              {modules.length !== 1 ? 's' : ''} — click a module to see its lessons.
-            </p>
-          )}
-          {groups.length > 0 ? (
-            <ModuleAccordion groups={groups} courseId={courseId} />
+          {lessons.length > 0 ? (
+            <LessonList lessons={lessons} courseId={courseId} />
           ) : (
             <Card>
               <CardHeader>
                 <CardTitle>No Lessons Yet</CardTitle>
                 <CardDescription>Lessons will appear here once published.</CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="modules" className="space-y-4">
+          {modules.length > 0 ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                This course has {modules.length} module
+                {modules.length !== 1 ? 's' : ''} — click a module to see the lessons
+                inside it.
+              </p>
+              <ModuleAccordion groups={groups} courseId={courseId} />
+            </>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>No Modules Yet</CardTitle>
+                <CardDescription>
+                  Lessons in this course aren&apos;t grouped into modules — see them all
+                  in the Lessons tab.
+                </CardDescription>
               </CardHeader>
             </Card>
           )}

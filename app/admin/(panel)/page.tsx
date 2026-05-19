@@ -219,7 +219,7 @@ export default async function AdminAnalyticsPage() {
                       </span>
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {format(new Date(a.created_at), 'MMM dd, hh:mm a')}
+                      {format(new Date(a.created_at), 'MMM d, h:mm a')}
                     </span>
                   </div>
                 ))}
