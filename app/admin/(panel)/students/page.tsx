@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Users, Flame, Zap, Clock } from 'lucide-react'
 import StudentCourseAssigner from '@/components/admin/student-course-assigner'
 import StudentCreator from '@/components/admin/student-creator'
+import CopyLinkButton from '@/components/admin/copy-link-button'
 
 export const dynamic = 'force-dynamic'
 
@@ -54,8 +55,8 @@ export default async function AdminStudentsPage() {
               Awaiting Signup
             </CardTitle>
             <CardDescription>
-              Approved emails that haven&apos;t created an account yet. Each moves to “All
-              Students” once they sign up with Google or a password.
+              Approved emails that haven&apos;t created an account yet. Copy a student&apos;s
+              signup link to share it again — each moves to “All Students” once they sign up.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -63,19 +64,20 @@ export default async function AdminStudentsPage() {
               {pendingList.map((p) => (
                 <div
                   key={p.id}
-                  className="flex flex-col gap-1 rounded-lg border border-dashed border-border p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-3 rounded-lg border border-dashed border-border p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
                     <p className="font-medium truncate">{p.full_name || 'Unnamed student'}</p>
                     <p className="text-sm text-muted-foreground truncate">{p.email}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      {courseTitle(p.course_id) && <span>{courseTitle(p.course_id)}</span>}
+                      {p.batch && <span>Batch: {p.batch}</span>}
+                      <span className="rounded bg-amber-500/15 px-1.5 py-0.5 uppercase tracking-wide text-amber-600">
+                        Pending
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    {courseTitle(p.course_id) && <span>{courseTitle(p.course_id)}</span>}
-                    {p.batch && <span>Batch: {p.batch}</span>}
-                    <span className="rounded bg-amber-500/15 px-1.5 py-0.5 uppercase tracking-wide text-amber-600">
-                      Pending
-                    </span>
-                  </div>
+                  <CopyLinkButton email={p.email} />
                 </div>
               ))}
             </div>

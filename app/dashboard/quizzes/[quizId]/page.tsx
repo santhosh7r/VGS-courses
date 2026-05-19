@@ -26,7 +26,7 @@ export default async function TakeQuizPage({ params }: PageProps) {
 
   if (!quiz) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Card className="max-w-md">
           <CardHeader>
             <CardTitle>Quiz Not Available</CardTitle>
@@ -57,7 +57,7 @@ export default async function TakeQuizPage({ params }: PageProps) {
   }))
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <Button asChild variant="ghost" className="mb-6">
         <Link href={`/dashboard/courses/${quiz.course_id}`}>
           <ArrowLeft className="w-4 h-4 mr-2" />

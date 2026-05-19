@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import LessonResourceManager from '@/components/admin/lesson-resource-manager'
+import YouTubeEmbed from '@/components/youtube-embed'
 
 function toLocalInput(iso: string | null): string {
   if (!iso) return ''
@@ -201,7 +202,7 @@ export default function EditLessonPage() {
 
               <div>
                 <label htmlFor="videoUrl" className="text-sm font-medium mb-2 block">
-                  Video URL
+                  YouTube Video URL
                 </label>
                 <Input
                   id="videoUrl"
@@ -211,6 +212,15 @@ export default function EditLessonPage() {
                   value={formData.videoUrl}
                   onChange={handleChange}
                 />
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Paste the YouTube link of the recorded class — students watch it as an
+                  embedded player on the lesson page.
+                </p>
+                {formData.videoUrl && (
+                  <div className="mt-3">
+                    <YouTubeEmbed url={formData.videoUrl} title={formData.title || 'Lesson video'} />
+                  </div>
+                )}
               </div>
 
               <div>

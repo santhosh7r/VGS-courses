@@ -38,7 +38,7 @@ export default async function DashboardPage() {
 
   if (!course) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Welcome, {firstName}!</h1>
         <Card className="max-w-2xl mt-6">
           <CardHeader>
@@ -106,7 +106,7 @@ export default async function DashboardPage() {
     : 100
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Welcome back, {firstName}!</h1>
         <p className="text-muted-foreground mt-1">{course.title}</p>

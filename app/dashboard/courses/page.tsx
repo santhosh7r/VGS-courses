@@ -34,7 +34,7 @@ export default async function CoursesPage() {
   const course: any = student?.courses ?? null
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">My Course</h1>
         <p className="text-muted-foreground mt-2">The course you are enrolled in</p>

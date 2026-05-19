@@ -31,7 +31,7 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
 
   if (!assignment) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Card className="max-w-md">
           <CardHeader>
             <CardTitle>Assignment Not Available</CardTitle>
@@ -60,7 +60,7 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
   const isOverdue = dueDate && new Date() > dueDate && !submission
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <Button asChild variant="ghost" className="mb-6">
         <Link href={`/dashboard/courses/${assignment.course_id}`}>
           <ArrowLeft className="w-4 h-4 mr-2" />

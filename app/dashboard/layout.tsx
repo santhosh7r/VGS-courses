@@ -81,7 +81,8 @@ export default async function DashboardLayout({
   return (
     <div className="flex h-screen bg-background">
       <DashboardNav />
-      <main className="flex-1 overflow-auto">{children}</main>
+      {/* pt-14 on mobile clears the fixed top bar from DashboardNav. */}
+      <main className="flex-1 overflow-auto pt-14 md:pt-0">{children}</main>
       <CommandPalette role="student" />
     </div>
   )

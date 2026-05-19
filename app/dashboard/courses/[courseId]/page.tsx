@@ -38,7 +38,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
 
   if (!course) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Card className="max-w-md">
           <CardHeader>
             <CardTitle>Course Not Available</CardTitle>
@@ -86,7 +86,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">{course.title}</h1>
         <p className="text-muted-foreground mt-2">{course.description}</p>

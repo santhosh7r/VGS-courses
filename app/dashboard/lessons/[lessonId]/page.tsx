@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft, Download, Play } from 'lucide-react'
 import LessonCompleteButton from '@/components/dashboard/lesson-complete-button'
+import YouTubeEmbed from '@/components/youtube-embed'
 
 interface PageProps {
   params: Promise<{ lessonId: string }>
@@ -46,7 +47,7 @@ export default async function LessonDetailPage({ params }: PageProps) {
 
   if (!lesson) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Card className="max-w-md">
           <CardHeader>
             <CardTitle>Lesson Not Available</CardTitle>
@@ -74,7 +75,7 @@ export default async function LessonDetailPage({ params }: PageProps) {
   const course: any = lesson.courses
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <Button asChild variant="ghost" className="mb-6">
         <Link href={`/dashboard/courses/${lesson.course_id}`}>
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -99,14 +100,7 @@ export default async function LessonDetailPage({ params }: PageProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <a
-                  href={lesson.video_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline text-sm break-all"
-                >
-                  {lesson.video_url}
-                </a>
+                <YouTubeEmbed url={lesson.video_url} title={lesson.title} />
               </CardContent>
             </Card>
           )}

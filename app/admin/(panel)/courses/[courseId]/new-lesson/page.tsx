@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import YouTubeEmbed from '@/components/youtube-embed'
 
 export default function NewLessonPage() {
   const router = useRouter()
@@ -157,7 +158,7 @@ export default function NewLessonPage() {
 
             <div>
               <label htmlFor="videoUrl" className="text-sm font-medium mb-2 block">
-                Video URL (optional)
+                YouTube Video URL (optional)
               </label>
               <Input
                 id="videoUrl"
@@ -167,6 +168,15 @@ export default function NewLessonPage() {
                 value={formData.videoUrl}
                 onChange={handleChange}
               />
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Paste the YouTube link of the recorded class — students watch it as an
+                embedded player on the lesson page.
+              </p>
+              {formData.videoUrl && (
+                <div className="mt-3">
+                  <YouTubeEmbed url={formData.videoUrl} title={formData.title || 'Lesson video'} />
+                </div>
+              )}
             </div>
 
             <div>

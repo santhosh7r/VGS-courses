@@ -22,7 +22,7 @@ export default async function LeaderboardPage() {
   const leaderboard: any[] = rows || []
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
           <Trophy className="w-7 h-7 text-yellow-500" />
