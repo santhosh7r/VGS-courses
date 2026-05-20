@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { CheckCircle, Clock, FileText, HelpCircle, Layers } from 'lucide-react'
 import LessonList from '@/components/dashboard/lesson-list'
 import ModuleAccordion from '@/components/dashboard/module-accordion'
+import CoursePlayground from '@/components/course-playground'
 
 interface PageProps {
   params: Promise<{ courseId: string }>
@@ -58,7 +59,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
     )
   }
 
-  const [{ data: attempts }, { data: submissions }] = await Promise.all([
+  const [{ data: attempts }, { data: submissions }, { data: studentRow }] = await Promise.all([
     supabase
       .from('quiz_attempts')
       .select('quiz_id, score, total')
@@ -67,6 +68,11 @@ export default async function CourseDetailPage({ params }: PageProps) {
       .from('submissions')
       .select('assignment_id, status, points_earned')
       .eq('student_id', user.id),
+    supabase
+      .from('students')
+      .select('full_name')
+      .eq('id', user.id)
+      .maybeSingle(),
   ])
 
   const attemptMap = new Map((attempts || []).map((a: any) => [a.quiz_id, a]))
@@ -116,12 +122,15 @@ export default async function CourseDetailPage({ params }: PageProps) {
       </div>
 
       <Tabs defaultValue="lessons" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="lessons">Lessons</TabsTrigger>
-          <TabsTrigger value="modules">Modules</TabsTrigger>
-          <TabsTrigger value="assignments">Assignments</TabsTrigger>
-          <TabsTrigger value="quizzes">Quizzes</TabsTrigger>
-        </TabsList>
+        <div className="-mx-4 sm:mx-0 overflow-x-auto px-4 sm:px-0">
+          <TabsList className="w-max">
+            <TabsTrigger value="lessons">Lessons</TabsTrigger>
+            <TabsTrigger value="modules">Modules</TabsTrigger>
+            <TabsTrigger value="assignments">Assignments</TabsTrigger>
+            <TabsTrigger value="quizzes">Quizzes</TabsTrigger>
+            <TabsTrigger value="playground">Live</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="lessons" className="space-y-4">
           {lessons.length > 0 ? (
@@ -244,6 +253,15 @@ export default async function CourseDetailPage({ params }: PageProps) {
               </CardHeader>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="playground">
+          <CoursePlayground
+            courseId={courseId}
+            role="student"
+            userId={user.id}
+            userName={studentRow?.full_name || 'Student'}
+          />
         </TabsContent>
       </Tabs>
     </div>

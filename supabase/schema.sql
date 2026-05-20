@@ -304,6 +304,35 @@ create table if not exists public.calendar_events (
   updated_at       timestamptz not null default now()
 );
 
+-- ----------------------------------------------------------------------------
+-- COURSE PLAYGROUND — realtime per-course messaging used during live classes.
+-- Admins broadcast tasks/announcements, students chat, both see updates over
+-- Supabase Realtime. `course_task_completions` records who marked a task done.
+-- ----------------------------------------------------------------------------
+create table if not exists public.course_messages (
+  id          uuid primary key default gen_random_uuid(),
+  course_id   uuid not null references public.courses (id) on delete cascade,
+  sender_id   uuid not null references auth.users (id) on delete cascade,
+  sender_role text not null check (sender_role in ('admin', 'student')),
+  sender_name text,
+  body        text not null,
+  kind        text not null default 'message'
+              check (kind in ('message', 'task', 'announcement')),
+  metadata    jsonb not null default '{}'::jsonb,
+  created_at  timestamptz not null default now()
+);
+create index if not exists course_messages_course_idx
+  on public.course_messages (course_id, created_at desc);
+
+create table if not exists public.course_task_completions (
+  id           uuid primary key default gen_random_uuid(),
+  message_id   uuid not null references public.course_messages (id) on delete cascade,
+  student_id   uuid not null references public.students (id) on delete cascade,
+  response     text,
+  completed_at timestamptz not null default now(),
+  unique (message_id, student_id)
+);
+
 -- ============================================================================
 -- HELPER FUNCTIONS — SECURITY DEFINER so RLS policies can't recurse.
 -- ============================================================================
@@ -672,6 +701,8 @@ alter table public.notifications      enable row level security;
 alter table public.achievements       enable row level security;
 alter table public.student_achievements enable row level security;
 alter table public.calendar_events    enable row level security;
+alter table public.course_messages    enable row level security;
+alter table public.course_task_completions enable row level security;
 
 do $$
 declare r record;
@@ -682,7 +713,8 @@ begin
       and tablename in ('admins','students','allowed_students','courses','modules','lessons',
                         'lesson_resources','assignments','submissions','quizzes','quiz_attempts',
                         'activity_log','lesson_progress','notifications','achievements',
-                        'student_achievements','calendar_events')
+                        'student_achievements','calendar_events',
+                        'course_messages','course_task_completions')
   loop
     execute format('drop policy if exists %I on public.%I;', r.policyname, r.tablename);
   end loop;
@@ -863,6 +895,97 @@ create policy "calendar student updates own"
 create policy "calendar student deletes own"
   on public.calendar_events for delete to authenticated
   using (owner_student_id = auth.uid());
+
+-- ---- course_messages -------------------------------------------------------
+-- Read: admins all; students only messages in their assigned course.
+create policy "course_messages read"
+  on public.course_messages for select to authenticated
+  using (public.is_admin() or course_id = public.my_course_id());
+
+-- Insert: admins write any kind in any course; students may only post a plain
+-- 'message' in their own course, signed as themselves.
+create policy "course_messages write"
+  on public.course_messages for insert to authenticated
+  with check (
+    (public.is_admin() and sender_role = 'admin' and sender_id = auth.uid())
+    or (
+      sender_id = auth.uid()
+      and sender_role = 'student'
+      and kind = 'message'
+      and course_id = public.my_course_id()
+    )
+  );
+
+-- Admins can edit or remove any message; students can delete their own.
+create policy "course_messages admin manages"
+  on public.course_messages for update to authenticated
+  using (public.is_admin()) with check (public.is_admin());
+create policy "course_messages delete"
+  on public.course_messages for delete to authenticated
+  using (public.is_admin() or sender_id = auth.uid());
+
+-- ---- course_task_completions ----------------------------------------------
+-- Read: admins all; students only their own + their classmates' for the same
+-- course (so they can see how many peers have completed in real time).
+create policy "course_task_completions read"
+  on public.course_task_completions for select to authenticated
+  using (
+    public.is_admin()
+    or student_id = auth.uid()
+    or exists (
+      select 1 from public.course_messages m
+      where m.id = course_task_completions.message_id
+        and m.course_id = public.my_course_id()
+    )
+  );
+
+-- Insert: a student records their own completion for a task in their course.
+create policy "course_task_completions student writes own"
+  on public.course_task_completions for insert to authenticated
+  with check (
+    student_id = auth.uid()
+    and exists (
+      select 1 from public.course_messages m
+      where m.id = course_task_completions.message_id
+        and m.kind = 'task'
+        and m.course_id = public.my_course_id()
+    )
+  );
+
+-- Update: student edits their own response text; admins can adjust any.
+create policy "course_task_completions update"
+  on public.course_task_completions for update to authenticated
+  using (public.is_admin() or student_id = auth.uid())
+  with check (public.is_admin() or student_id = auth.uid());
+
+-- Delete: a student can undo their own completion; admins can remove any.
+create policy "course_task_completions delete"
+  on public.course_task_completions for delete to authenticated
+  using (public.is_admin() or student_id = auth.uid());
+
+-- ============================================================================
+-- REALTIME — broadcast new playground messages + task completions over WS
+-- ============================================================================
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename  = 'course_messages'
+  ) then
+    alter publication supabase_realtime add table public.course_messages;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename  = 'course_task_completions'
+  ) then
+    alter publication supabase_realtime add table public.course_task_completions;
+  end if;
+end;
+$$;
 
 -- ============================================================================
 -- PROFILES VIEW

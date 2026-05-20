@@ -10,6 +10,7 @@ import CourseSettingsForm from '@/components/admin/course-settings-form'
 import ModuleManager from '@/components/admin/module-manager'
 import ScheduleManager from '@/components/admin/schedule-manager'
 import LeaderboardTable from '@/components/leaderboard-table'
+import CoursePlayground from '@/components/course-playground'
 
 interface PageProps {
   params: Promise<{ courseId: string }>
@@ -18,6 +19,17 @@ interface PageProps {
 export default async function CourseEditorPage({ params }: PageProps) {
   const { courseId } = await params
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const { data: admin } = user
+    ? await supabase
+        .from('admins')
+        .select('full_name')
+        .eq('id', user.id)
+        .maybeSingle()
+    : { data: null }
 
   const { data: course } = await supabase
     .from('courses')
@@ -91,6 +103,7 @@ export default async function CourseEditorPage({ params }: PageProps) {
             <TabsTrigger value="quizzes">Quizzes ({quizzes.length})</TabsTrigger>
             <TabsTrigger value="modules">Modules ({modules.length})</TabsTrigger>
             <TabsTrigger value="schedule">Schedule ({scheduleEvents?.length || 0})</TabsTrigger>
+            <TabsTrigger value="playground">Playground</TabsTrigger>
             <TabsTrigger value="students">Students ({students.length})</TabsTrigger>
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -183,6 +196,26 @@ export default async function CourseEditorPage({ params }: PageProps) {
 
         <TabsContent value="schedule">
           <ScheduleManager courseId={courseId} events={scheduleEvents || []} />
+        </TabsContent>
+
+        <TabsContent value="playground">
+          {user ? (
+            <CoursePlayground
+              courseId={courseId}
+              role="admin"
+              userId={user.id}
+              userName={admin?.full_name || 'Instructor'}
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Sign in required</CardTitle>
+                <CardDescription>
+                  Log in to use the live playground for this course.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="students">
