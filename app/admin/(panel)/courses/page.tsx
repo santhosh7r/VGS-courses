@@ -26,15 +26,15 @@ export default async function AdminCoursesPage() {
     .order('order_index', { ascending: true })
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-col gap-4 mb-6 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Courses</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Courses</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
             {courses?.length || 0} course{courses?.length !== 1 ? 's' : ''} on the platform
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/admin/new-course">
             <Plus className="w-4 h-4 mr-2" />
             New Course
@@ -43,7 +43,7 @@ export default async function AdminCoursesPage() {
       </div>
 
       {courses && courses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {courses.map((course: any) => (
             <Card key={course.id} className="flex flex-col">
               <CardHeader>

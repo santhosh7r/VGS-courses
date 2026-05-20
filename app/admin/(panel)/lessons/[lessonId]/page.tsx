@@ -120,12 +120,12 @@ export default function EditLessonPage() {
   }
 
   if (loadingLesson) {
-    return <div className="p-8 text-muted-foreground">Loading lesson…</div>
+    return <div className="p-4 sm:p-6 lg:p-8 text-muted-foreground">Loading lesson…</div>
   }
 
   if (notFound) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Button asChild variant="ghost" className="mb-6">
           <Link href="/admin/courses">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -138,17 +138,19 @@ export default function EditLessonPage() {
   }
 
   return (
-    <div className="p-8">
-      <Button asChild variant="ghost" className="mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <Button asChild variant="ghost" className="mb-4 sm:mb-6">
         <Link href={`/admin/courses/${courseId}`}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Course
         </Link>
       </Button>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Edit Lesson</h1>
-        <p className="text-muted-foreground mt-2">Update this lesson&apos;s content</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Edit Lesson</h1>
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
+          Update this lesson&apos;s content
+        </p>
       </div>
 
       <div className="max-w-3xl space-y-6">

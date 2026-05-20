@@ -34,7 +34,7 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
 
   if (!student) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Button asChild variant="ghost" className="mb-6">
           <Link href="/admin/students">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -103,18 +103,18 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
   const course: any = student.courses
 
   return (
-    <div className="p-8">
-      <Button asChild variant="ghost" className="mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <Button asChild variant="ghost" className="mb-4 sm:mb-6">
         <Link href="/admin/students">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Students
         </Link>
       </Button>
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-8">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-foreground">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-6 sm:mb-8">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground break-words">
               {student.full_name || 'Unnamed student'}
             </h1>
             <span
@@ -127,7 +127,7 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
               {student.status}
             </span>
           </div>
-          <p className="text-muted-foreground mt-1">{student.email}</p>
+          <p className="text-muted-foreground mt-1 break-all">{student.email}</p>
           <p className="text-xs text-muted-foreground mt-1">
             Joined {format(new Date(student.created_at), 'MMM dd, yyyy')} ·{' '}
             {student.last_active_at
@@ -139,7 +139,7 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <StatCard icon={<Zap className="w-5 h-5 text-yellow-500" />} label="Total XP" value={student.xp} />
         <StatCard icon={<Flame className="w-5 h-5 text-orange-500" />} label="Current Streak" value={`${student.streak}d`} />
         <StatCard icon={<Flame className="w-5 h-5 text-muted-foreground" />} label="Longest Streak" value={`${student.longest_streak}d`} />
@@ -148,7 +148,7 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
       </div>
 
       {/* Execution Score */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <ExecutionScore
           score={executionScore}
           factors={[
@@ -160,7 +160,7 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
       </div>
 
       {/* Course assignment */}
-      <Card className="mb-8">
+      <Card className="mb-6 sm:mb-8">
         <CardHeader>
           <CardTitle className="text-lg">Course Assignment</CardTitle>
           <CardDescription>
@@ -176,14 +176,16 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="activity" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="logins">Login History ({logins.length})</TabsTrigger>
-          <TabsTrigger value="assignments">Assignments ({subs.length})</TabsTrigger>
-          <TabsTrigger value="badges">Badges ({earned?.length || 0})</TabsTrigger>
-          <TabsTrigger value="notes">Notes</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="activity" className="space-y-4 sm:space-y-6">
+        <div className="-mx-4 sm:mx-0 overflow-x-auto px-4 sm:px-0">
+          <TabsList className="w-max">
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsTrigger value="logins">Logins ({logins.length})</TabsTrigger>
+            <TabsTrigger value="assignments">Assignments ({subs.length})</TabsTrigger>
+            <TabsTrigger value="badges">Badges ({earned?.length || 0})</TabsTrigger>
+            <TabsTrigger value="notes">Notes</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="activity">
           <Card>
@@ -197,10 +199,10 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
                   {acts.map((a: any) => (
                     <div
                       key={a.id}
-                      className="flex items-center justify-between text-sm border-b border-border last:border-0 py-2"
+                      className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 text-sm border-b border-border last:border-0 py-2"
                     >
                       <span>{ACTIVITY_LABEL[a.type] || a.type}</span>
-                      <span className="flex items-center gap-3 text-muted-foreground">
+                      <span className="flex items-center gap-3 text-muted-foreground text-xs sm:text-sm">
                         {a.xp_delta > 0 && (
                           <span className="text-yellow-600">+{a.xp_delta} XP</span>
                         )}
@@ -227,10 +229,12 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
                   {logins.map((a: any) => (
                     <div
                       key={a.id}
-                      className="flex items-center justify-between text-sm border-b border-border last:border-0 py-2"
+                      className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 text-sm border-b border-border last:border-0 py-2"
                     >
                       <span>{format(new Date(a.created_at), 'EEE, MMM dd yyyy · hh:mm a')}</span>
-                      <span className="text-muted-foreground">{a.detail?.device || '—'}</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">
+                        {a.detail?.device || '—'}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -252,11 +256,13 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
                   {subs.map((s: any) => (
                     <div
                       key={s.id}
-                      className="flex items-center justify-between text-sm border-b border-border last:border-0 py-2"
+                      className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3 text-sm border-b border-border last:border-0 py-2"
                     >
-                      <span>{s.assignments?.title || 'Assignment'}</span>
-                      <span className="flex items-center gap-3">
-                        <span className="text-muted-foreground">
+                      <span className="min-w-0 break-words">
+                        {s.assignments?.title || 'Assignment'}
+                      </span>
+                      <span className="flex items-center gap-3 shrink-0">
+                        <span className="text-xs sm:text-sm text-muted-foreground">
                           {format(new Date(s.submitted_at), 'MMM dd, yyyy')}
                         </span>
                         <span

@@ -68,17 +68,17 @@ export default function NewCoursePage() {
   }
 
   return (
-    <div className="p-8">
-      <Button asChild variant="ghost" className="mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <Button asChild variant="ghost" className="mb-4 sm:mb-6">
         <Link href="/admin">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Courses
         </Link>
       </Button>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Create New Course</h1>
-        <p className="text-muted-foreground mt-2">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Create New Course</h1>
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
           Add a new course to the platform. You can assign students to it afterwards.
         </p>
       </div>

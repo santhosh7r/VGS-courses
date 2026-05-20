@@ -36,7 +36,7 @@ export default async function CourseEditorPage({ params }: PageProps) {
 
   if (!course) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Button asChild variant="ghost" className="mb-6">
           <Link href="/admin/courses">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -66,30 +66,36 @@ export default async function CourseEditorPage({ params }: PageProps) {
   )
 
   return (
-    <div className="p-8">
-      <Button asChild variant="ghost" className="mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <Button asChild variant="ghost" className="mb-4 sm:mb-6">
         <Link href="/admin/courses">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Courses
         </Link>
       </Button>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">{course.title}</h1>
-        <p className="text-muted-foreground mt-2">{course.description || 'No description'}</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground break-words">
+          {course.title}
+        </h1>
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
+          {course.description || 'No description'}
+        </p>
       </div>
 
-      <Tabs defaultValue="lessons" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="lessons">Lessons ({lessons.length})</TabsTrigger>
-          <TabsTrigger value="assignments">Assignments ({assignments.length})</TabsTrigger>
-          <TabsTrigger value="quizzes">Quizzes ({quizzes.length})</TabsTrigger>
-          <TabsTrigger value="modules">Modules ({modules.length})</TabsTrigger>
-          <TabsTrigger value="schedule">Schedule ({scheduleEvents?.length || 0})</TabsTrigger>
-          <TabsTrigger value="students">Students ({students.length})</TabsTrigger>
-          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="lessons" className="space-y-4 sm:space-y-6">
+        <div className="-mx-4 sm:mx-0 overflow-x-auto px-4 sm:px-0">
+          <TabsList className="w-max">
+            <TabsTrigger value="lessons">Lessons ({lessons.length})</TabsTrigger>
+            <TabsTrigger value="assignments">Assignments ({assignments.length})</TabsTrigger>
+            <TabsTrigger value="quizzes">Quizzes ({quizzes.length})</TabsTrigger>
+            <TabsTrigger value="modules">Modules ({modules.length})</TabsTrigger>
+            <TabsTrigger value="schedule">Schedule ({scheduleEvents?.length || 0})</TabsTrigger>
+            <TabsTrigger value="students">Students ({students.length})</TabsTrigger>
+            <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="lessons">
           <div className="space-y-6">
@@ -133,21 +139,21 @@ export default async function CourseEditorPage({ params }: PageProps) {
               <div className="space-y-3">
                 {quizzes.map((q: any) => (
                   <Card key={q.id}>
-                    <CardContent className="flex items-center justify-between gap-3 py-4">
-                      <div>
-                        <p className="font-medium">{q.title}</p>
+                    <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="font-medium break-words">{q.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {q.is_published ? 'Published' : 'Draft'}
                         </p>
                       </div>
-                      <div className="flex gap-2">
-                        <Button asChild variant="outline" size="sm">
+                      <div className="flex flex-wrap gap-2">
+                        <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-none">
                           <Link href={`/admin/quizzes/${q.id}/results`}>
                             <BarChart3 className="w-4 h-4 mr-2" />
                             Results
                           </Link>
                         </Button>
-                        <Button asChild variant="outline" size="sm">
+                        <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-none">
                           <Link href={`/admin/quizzes/${q.id}`}>
                             <Pencil className="w-4 h-4 mr-2" />
                             Edit
@@ -198,13 +204,15 @@ export default async function CourseEditorPage({ params }: PageProps) {
                   {students.map((student: any) => (
                     <div
                       key={student.id}
-                      className="flex items-center justify-between p-3 border border-border rounded-lg"
+                      className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 border border-border rounded-lg"
                     >
-                      <div>
-                        <p className="font-medium">{student.full_name || 'Unnamed student'}</p>
-                        <p className="text-sm text-muted-foreground">{student.email}</p>
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">
+                          {student.full_name || 'Unnamed student'}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate">{student.email}</p>
                       </div>
-                      <Button asChild variant="outline" size="sm">
+                      <Button asChild variant="outline" size="sm" className="self-start sm:self-auto shrink-0">
                         <Link href={`/admin/students/${student.id}`}>View</Link>
                       </Button>
                     </div>

@@ -17,15 +17,17 @@ export default function SubmissionList({
         submissions.map((submission: any) => (
           <Card key={submission.id}>
             <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <CardTitle className="text-base sm:text-lg break-words">
                     {submission.students?.full_name || 'Unnamed student'}
                   </CardTitle>
-                  <CardDescription>{submission.students?.email}</CardDescription>
+                  <CardDescription className="break-all">
+                    {submission.students?.email}
+                  </CardDescription>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Submitted</p>
+                <div className="sm:text-right shrink-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Submitted</p>
                   <p className="text-sm font-medium">
                     {format(new Date(submission.submitted_at), 'MMM dd, yyyy')}
                   </p>

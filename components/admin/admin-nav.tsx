@@ -67,13 +67,24 @@ export default function AdminNav({ email, name }: { email?: string; name: string
 
   return (
     <TooltipProvider delayDuration={0}>
-      <button
-        onClick={() => setMobileOpen(true)}
-        aria-label="Open menu"
-        className="md:hidden fixed top-4 left-4 z-30 rounded-lg border border-border bg-card p-2 shadow-premium"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
+      {/* Mobile top bar — holds the menu button so page content is never
+          hidden underneath a floating button. */}
+      <header className="md:hidden fixed top-0 inset-x-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-card px-3">
+        <button
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open menu"
+          className="rounded-lg p-2 text-foreground hover:bg-accent"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <ShieldCheck className="h-4 w-4" />
+          </div>
+          <span className="font-bold text-foreground">100x Hub</span>
+          <span className="text-[11px] text-muted-foreground">Admin</span>
+        </div>
+      </header>
 
       {mobileOpen && (
         <div

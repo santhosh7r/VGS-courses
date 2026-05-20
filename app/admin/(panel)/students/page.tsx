@@ -37,10 +37,10 @@ export default async function AdminStudentsPage() {
     courseList.find((c) => c.id === id)?.title ?? null
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Students</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Students</h1>
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
           {list.length} signed up · {activeCount} active · {pendingList.length} awaiting signup
         </p>
       </div>
@@ -101,10 +101,10 @@ export default async function AdminStudentsPage() {
               {list.map((student) => (
                 <div
                   key={student.id}
-                  className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between p-4 border border-border rounded-lg"
+                  className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between p-3 sm:p-4 border border-border rounded-lg"
                 >
                   <div className="min-w-0 lg:w-64">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium truncate">
                         {student.full_name || 'Unnamed student'}
                       </p>
@@ -135,13 +135,15 @@ export default async function AdminStudentsPage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <StudentCourseAssigner
-                      studentId={student.id}
-                      currentCourseId={student.course_id}
-                      courses={courseList}
-                    />
-                    <Button asChild variant="outline" size="sm">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <div className="min-w-0 flex-1 sm:flex-none">
+                      <StudentCourseAssigner
+                        studentId={student.id}
+                        currentCourseId={student.course_id}
+                        courses={courseList}
+                      />
+                    </div>
+                    <Button asChild variant="outline" size="sm" className="shrink-0">
                       <Link href={`/admin/students/${student.id}`}>View</Link>
                     </Button>
                   </div>

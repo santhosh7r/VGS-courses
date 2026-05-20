@@ -28,29 +28,29 @@ export default async function GradeSubmissionPage({ params }: PageProps) {
     .maybeSingle()
 
   if (!submission) {
-    return <div className="p-8">Submission not found</div>
+    return <div className="p-4 sm:p-6 lg:p-8">Submission not found</div>
   }
 
   const assignment: any = submission.assignments
   const student: any = submission.students
 
   return (
-    <div className="p-8">
-      <Button asChild variant="ghost" className="mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <Button asChild variant="ghost" className="mb-4 sm:mb-6">
         <Link href={`/admin/assignments/${submission.assignment_id}`}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Submissions
         </Link>
       </Button>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Review Submission</h1>
-        <p className="text-muted-foreground mt-2">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Review Submission</h1>
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base break-words">
           {assignment?.title} · {student?.full_name || 'Unnamed student'} ({student?.email})
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>

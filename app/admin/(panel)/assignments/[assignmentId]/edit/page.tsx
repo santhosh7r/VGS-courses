@@ -106,12 +106,12 @@ export default function EditAssignmentPage() {
   }
 
   if (loadingData) {
-    return <div className="p-8 text-muted-foreground">Loading assignment…</div>
+    return <div className="p-4 sm:p-6 lg:p-8 text-muted-foreground">Loading assignment…</div>
   }
 
   if (notFound) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Button asChild variant="ghost" className="mb-6">
           <Link href="/admin">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -124,17 +124,19 @@ export default function EditAssignmentPage() {
   }
 
   return (
-    <div className="p-8">
-      <Button asChild variant="ghost" className="mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <Button asChild variant="ghost" className="mb-4 sm:mb-6">
         <Link href={`/admin/courses/${courseId}`}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Course
         </Link>
       </Button>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Edit Assignment</h1>
-        <p className="text-muted-foreground mt-2">Update this assignment&apos;s details</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Edit Assignment</h1>
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
+          Update this assignment&apos;s details
+        </p>
       </div>
 
       <Card className="max-w-3xl">
@@ -183,7 +185,7 @@ export default function EditAssignmentPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label htmlFor="pointsPossible" className="text-sm font-medium mb-2 block">
                   Points Possible
@@ -226,11 +228,11 @@ export default function EditAssignmentPage() {
             {error && <div className="text-sm text-destructive">{error}</div>}
             {saved && <div className="text-sm text-green-600">Saved ✓</div>}
 
-            <div className="flex gap-4">
-              <Button type="submit" disabled={loading}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
+              <Button type="submit" disabled={loading} className="w-full sm:w-auto">
                 {loading ? 'Saving...' : 'Save Changes'}
               </Button>
-              <Button type="button" variant="outline" asChild>
+              <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
                 <Link href={`/admin/courses/${courseId}`}>Back to Course</Link>
               </Button>
             </div>

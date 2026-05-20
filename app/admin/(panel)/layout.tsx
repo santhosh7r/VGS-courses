@@ -37,7 +37,8 @@ export default async function AdminPanelLayout({
   return (
     <div className="flex h-screen bg-background">
       <AdminNav email={user.email} name={admin.full_name} />
-      <main className="flex-1 overflow-auto">{children}</main>
+      {/* pt-14 on mobile clears the fixed top bar from AdminNav. */}
+      <main className="flex-1 overflow-auto pt-14 md:pt-0">{children}</main>
       <CommandPalette role="admin" />
     </div>
   )

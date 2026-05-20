@@ -205,20 +205,25 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
             </Card>
           )}
 
-          {/* Rejected — let the student fix and resubmit */}
-          {status === 'rejected' && submission && (
+          {/* Submission form — editable until admin approves. When a submission
+              already exists, the form collapses behind an Edit button so the
+              read-only summary above stays the primary view. */}
+          {status !== 'approved' && (
             <SubmissionForm
               assignmentId={assignmentId}
-              existing={{
-                id: submission.id,
-                content: submission.content,
-                link_url: submission.link_url,
-              }}
+              status={status}
+              existing={
+                submission
+                  ? {
+                      id: submission.id,
+                      content: submission.content,
+                      link_url: submission.link_url,
+                      submitted_at: submission.submitted_at,
+                    }
+                  : undefined
+              }
             />
           )}
-
-          {/* No submission yet */}
-          {!submission && <SubmissionForm assignmentId={assignmentId} />}
         </div>
 
         <div className="space-y-6">

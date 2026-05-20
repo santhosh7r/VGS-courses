@@ -120,19 +120,19 @@ export default function QuizBuilder({
   }
 
   return (
-    <div className="p-8">
-      <Button asChild variant="ghost" className="mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <Button asChild variant="ghost" className="mb-4 sm:mb-6">
         <Link href={`/admin/courses/${courseId}`}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Course
         </Link>
       </Button>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
           {isEdit ? 'Edit Quiz' : 'Create Quiz'}
         </h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
           Multiple-choice quiz — students earn XP based on their score.
         </p>
       </div>

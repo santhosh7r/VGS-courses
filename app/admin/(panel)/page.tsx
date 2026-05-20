@@ -91,17 +91,19 @@ export default async function AdminAnalyticsPage() {
     .slice(0, 8)
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-col gap-4 mb-6 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-2">Platform analytics &amp; engagement</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
+            Platform analytics &amp; engagement
+          </p>
         </div>
-        <div className="flex gap-3">
-          <Button asChild variant="outline">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <Button asChild variant="outline" className="flex-1 sm:flex-none">
             <Link href="/admin/students">Manage Students</Link>
           </Button>
-          <Button asChild>
+          <Button asChild className="flex-1 sm:flex-none">
             <Link href="/admin/new-course">
               <Plus className="w-4 h-4 mr-2" />
               New Course
@@ -111,7 +113,7 @@ export default async function AdminAnalyticsPage() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <Kpi icon={<Users className="w-5 h-5 text-primary" />} label="Total Students" value={totalStudents} />
         <Kpi icon={<UserCheck className="w-5 h-5 text-green-600" />} label="Active Students" value={activeStudents} />
         <Kpi icon={<Activity className="w-5 h-5 text-blue-500" />} label="Active Today" value={dauToday} />
@@ -121,7 +123,7 @@ export default async function AdminAnalyticsPage() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Daily Active Users</CardTitle>
@@ -143,7 +145,7 @@ export default async function AdminAnalyticsPage() {
       </div>
 
       {/* Leaderboard + recent activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -208,9 +210,9 @@ export default async function AdminAnalyticsPage() {
                 {feed.map((a: any) => (
                   <div
                     key={a.id}
-                    className="flex items-center justify-between text-sm border-b border-border last:border-0 py-2"
+                    className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 text-sm border-b border-border last:border-0 py-2"
                   >
-                    <span>
+                    <span className="min-w-0">
                       <span className="font-medium">
                         {a.students?.full_name || 'A student'}
                       </span>{' '}
@@ -218,7 +220,7 @@ export default async function AdminAnalyticsPage() {
                         {ACTIVITY_LABEL[a.type] || a.type}
                       </span>
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground shrink-0">
                       {format(new Date(a.created_at), 'MMM d, h:mm a')}
                     </span>
                   </div>
@@ -246,11 +248,11 @@ function Kpi({
   return (
     <Card>
       <CardContent className="pt-6">
-        <div className="flex items-center gap-3">
-          {icon}
-          <div>
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold">{value}</p>
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="shrink-0">{icon}</span>
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground truncate">{label}</p>
+            <p className="text-xl sm:text-2xl font-bold truncate">{value}</p>
           </div>
         </div>
       </CardContent>

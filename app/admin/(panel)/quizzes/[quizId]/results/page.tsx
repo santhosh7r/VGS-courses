@@ -21,7 +21,7 @@ export default async function QuizResultsPage({ params }: PageProps) {
 
   if (!quiz) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Button asChild variant="ghost" className="mb-6">
           <Link href="/admin/courses">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -57,22 +57,24 @@ export default async function QuizResultsPage({ params }: PageProps) {
   }))
 
   return (
-    <div className="p-8">
-      <Button asChild variant="ghost" className="mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <Button asChild variant="ghost" className="mb-4 sm:mb-6">
         <Link href={`/admin/courses/${quiz.course_id}`}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Course
         </Link>
       </Button>
 
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{quiz.title}</h1>
-          <p className="text-muted-foreground mt-2">
+      <div className="mb-6 sm:mb-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground break-words">
+            {quiz.title}
+          </h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
             Quiz results · {questions.length} question{questions.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" className="w-full sm:w-auto">
           <Link href={`/admin/quizzes/${quiz.id}`}>
             <Pencil className="w-4 h-4 mr-2" />
             Edit Quiz

@@ -20,7 +20,7 @@ export default async function EditQuizPage({ params }: PageProps) {
 
   if (!quiz) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <Button asChild variant="ghost" className="mb-6">
           <Link href="/admin">
             <ArrowLeft className="w-4 h-4 mr-2" />
