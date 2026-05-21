@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
+import { formatISTWeekdayDateTime, fromISTDateTimeLocalInput } from '@/lib/date-utils'
 import {
   ChevronLeft, ChevronRight, Plus, Trash, CalendarDays, GraduationCap, Video,
   ClipboardList, AlertCircle, Sparkles,
@@ -142,7 +143,7 @@ export default function CalendarView({
         title: form.title.trim(),
         description: form.description || null,
         event_type: 'personal',
-        starts_at: new Date(form.starts_at).toISOString(),
+        starts_at: fromISTDateTimeLocalInput(form.starts_at),
       })
       .select('id, title, description, event_type, starts_at, ends_at, owner_student_id')
       .single()
@@ -294,7 +295,7 @@ export default function CalendarView({
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{it.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {format(it.date, 'EEE, MMM dd · hh:mm a')}
+                          {formatISTWeekdayDateTime(it.date)}
                         </p>
                         {it.description && (
                           <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">

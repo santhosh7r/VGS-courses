@@ -2,7 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import {
+  formatISTShortDateTimeNoPad,
+  formatISTWeekday,
+  getISTDateKey,
+  istStartOfDayDaysAgo,
+} from '@/lib/date-utils'
 import {
   Users, UserCheck, BookOpen, ClipboardCheck, Activity, Zap, Trophy, Plus,
 } from 'lucide-react'
@@ -19,8 +24,8 @@ const ACTIVITY_LABEL: Record<string, string> = {
 
 export default async function AdminAnalyticsPage() {
   const supabase = await createClient()
-  const since7 = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)
-  since7.setHours(0, 0, 0, 0)
+  // 7-day window anchored to the start of today in IST (00:00 IST six days ago).
+  const since7 = istStartOfDayDaysAgo(6)
 
   const [students, courses, submissions, lessons, progressCount, recentWeek, recentFeed] =
     await Promise.all([
@@ -62,22 +67,20 @@ export default async function AdminAnalyticsPage() {
   const approved = subs.filter(s => s.status === 'approved').length
   const approvalPct = subs.length > 0 ? Math.round((approved / subs.length) * 100) : 0
 
-  // Daily active users — today and the 7-day trend.
-  const todayKey = new Date().toISOString().slice(0, 10)
+  // Daily active users — today and the 7-day trend, bucketed by IST calendar day.
+  const todayKey = getISTDateKey()
   const dauToday = new Set(
-    weekActivity.filter(a => a.created_at.slice(0, 10) === todayKey).map(a => a.student_id)
+    weekActivity.filter(a => getISTDateKey(a.created_at) === todayKey).map(a => a.student_id)
   ).size
 
   const trend: { day: string; users: number }[] = []
   for (let i = 6; i >= 0; i--) {
-    const d = new Date()
-    d.setHours(0, 0, 0, 0)
-    d.setDate(d.getDate() - i)
-    const key = d.toISOString().slice(0, 10)
+    const d = istStartOfDayDaysAgo(i)
+    const key = getISTDateKey(d)
     const users = new Set(
-      weekActivity.filter(a => a.created_at.slice(0, 10) === key).map(a => a.student_id)
+      weekActivity.filter(a => getISTDateKey(a.created_at) === key).map(a => a.student_id)
     ).size
-    trend.push({ day: format(d, 'EEE'), users })
+    trend.push({ day: formatISTWeekday(d), users })
   }
 
   const engagement = courseList.map(c => ({
@@ -221,7 +224,7 @@ export default async function AdminAnalyticsPage() {
                       </span>
                     </span>
                     <span className="text-xs text-muted-foreground shrink-0">
-                      {format(new Date(a.created_at), 'MMM d, h:mm a')}
+                      {formatISTShortDateTimeNoPad(a.created_at)}
                     </span>
                   </div>
                 ))}

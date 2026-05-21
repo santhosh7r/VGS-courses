@@ -11,13 +11,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import LessonResourceManager from '@/components/admin/lesson-resource-manager'
 import YouTubeEmbed from '@/components/youtube-embed'
-
-function toLocalInput(iso: string | null): string {
-  if (!iso) return ''
-  const d = new Date(iso)
-  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-  return local.toISOString().slice(0, 16)
-}
+import { toISTDateTimeLocalInput, fromISTDateTimeLocalInput } from '@/lib/date-utils'
 
 export default function EditLessonPage() {
   const router = useRouter()
@@ -62,7 +56,7 @@ export default function EditLessonPage() {
         description: data.description ?? '',
         content: data.content ?? '',
         videoUrl: data.video_url ?? '',
-        scheduledAt: toLocalInput(data.scheduled_at),
+        scheduledAt: toISTDateTimeLocalInput(data.scheduled_at),
         moduleId: data.module_id ?? '',
         isPublished: data.is_published ?? false,
       })
@@ -99,9 +93,7 @@ export default function EditLessonPage() {
           content: formData.content,
           video_url: formData.videoUrl || null,
           module_id: formData.moduleId || null,
-          scheduled_at: formData.scheduledAt
-            ? new Date(formData.scheduledAt).toISOString()
-            : null,
+          scheduled_at: fromISTDateTimeLocalInput(formData.scheduledAt),
           is_published: formData.isPublished,
         })
         .eq('id', lessonId)

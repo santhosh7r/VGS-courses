@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Ban } from 'lucide-react'
 import DashboardNav from '@/components/dashboard/dashboard-nav'
 import CommandPalette from '@/components/command-palette'
+import { getISTDateKey } from '@/lib/date-utils'
 
 export default async function DashboardLayout({
   children,
@@ -68,9 +69,9 @@ export default async function DashboardLayout({
     redirect('/onboarding')
   }
 
-  // Record one "login" activity per day (powers streaks + login history).
-  const today = new Date().toISOString().slice(0, 10)
-  if (student && (!student.last_login_at || student.last_login_at.slice(0, 10) < today)) {
+  // Record one "login" activity per IST calendar day (powers streaks + login history).
+  const today = getISTDateKey()
+  if (student && (!student.last_login_at || getISTDateKey(student.last_login_at) < today)) {
     const ua = (await headers()).get('user-agent') || ''
     const device = /mobile|android|iphone|ipad/i.test(ua) ? 'Mobile' : 'Desktop'
     await supabase

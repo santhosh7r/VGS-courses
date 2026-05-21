@@ -808,7 +808,7 @@ create policy "submissions student edits own not approved"
   on public.submissions for update to authenticated
   using (student_id = auth.uid() and status <> 'approved')
   with check (student_id = auth.uid());
-create policy "submissions admin grades"
+create policy "submissions admin grades"  
   on public.submissions for update to authenticated
   using (public.is_admin()) with check (public.is_admin());
 create policy "submissions admin deletes"

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { fromISTDateTimeLocalInput } from '@/lib/date-utils'
 
 export default function NewAssignmentPage() {
   const router = useRouter()
@@ -53,7 +54,7 @@ export default function NewAssignmentPage() {
         description: formData.description,
         instructions: formData.instructions,
         points_possible: parseInt(formData.pointsPossible),
-        due_date: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
+        due_date: fromISTDateTimeLocalInput(formData.dueDate),
         order_index: nextOrder,
       })
 

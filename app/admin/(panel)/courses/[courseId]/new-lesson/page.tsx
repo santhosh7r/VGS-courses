@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import YouTubeEmbed from '@/components/youtube-embed'
+import { fromISTDateTimeLocalInput } from '@/lib/date-utils'
 
 export default function NewLessonPage() {
   const router = useRouter()
@@ -66,9 +67,7 @@ export default function NewLessonPage() {
         content: formData.content,
         video_url: formData.videoUrl || null,
         module_id: formData.moduleId || null,
-        scheduled_at: formData.scheduledAt
-          ? new Date(formData.scheduledAt).toISOString()
-          : null,
+        scheduled_at: fromISTDateTimeLocalInput(formData.scheduledAt),
         order_index: nextOrder,
       })
 

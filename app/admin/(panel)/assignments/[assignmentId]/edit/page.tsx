@@ -9,14 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-
-// ISO timestamp -> value for a <input type="datetime-local"> (local time).
-function toLocalInput(iso: string | null): string {
-  if (!iso) return ''
-  const d = new Date(iso)
-  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-  return local.toISOString().slice(0, 16)
-}
+import { toISTDateTimeLocalInput, fromISTDateTimeLocalInput } from '@/lib/date-utils'
 
 export default function EditAssignmentPage() {
   const router = useRouter()
@@ -58,7 +51,7 @@ export default function EditAssignmentPage() {
           description: data.description ?? '',
           instructions: data.instructions ?? '',
           pointsPossible: String(data.points_possible ?? 100),
-          dueDate: toLocalInput(data.due_date),
+          dueDate: toISTDateTimeLocalInput(data.due_date),
           isPublished: data.is_published ?? false,
         })
       }
@@ -87,7 +80,7 @@ export default function EditAssignmentPage() {
           description: formData.description,
           instructions: formData.instructions,
           points_possible: parseInt(formData.pointsPossible) || 100,
-          due_date: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
+          due_date: fromISTDateTimeLocalInput(formData.dueDate),
           is_published: formData.isPublished,
         })
         .eq('id', assignmentId)

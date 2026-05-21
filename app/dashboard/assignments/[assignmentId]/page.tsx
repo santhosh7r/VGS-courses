@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import Link from 'next/link'
 import { ArrowLeft, Clock, AlertCircle, CheckCircle2, XCircle, ExternalLink } from 'lucide-react'
 import SubmissionForm from '@/components/dashboard/submission-form'
-import { format } from 'date-fns'
+import { formatISTDate, formatISTDateTime, formatISTTime } from '@/lib/date-utils'
 
 interface PageProps {
   params: Promise<{ assignmentId: string }>
@@ -129,11 +129,11 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
               <CardContent className="space-y-4 text-sm">
                 <p className="text-xs text-muted-foreground">
                   Submitted{' '}
-                  {format(new Date(submission.submitted_at), 'MMM dd, yyyy · hh:mm a')}
+                  {formatISTDateTime(submission.submitted_at)}
                   {submission.graded_at && (
                     <>
                       {' · '}reviewed{' '}
-                      {format(new Date(submission.graded_at), 'MMM dd, yyyy')}
+                      {formatISTDate(submission.graded_at)}
                     </>
                   )}
                 </p>
@@ -246,8 +246,8 @@ export default async function AssignmentDetailPage({ params }: PageProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p className="text-sm font-medium">{format(dueDate, 'MMM dd, yyyy')}</p>
-                <p className="text-xs text-muted-foreground">{format(dueDate, 'hh:mm a')}</p>
+                <p className="text-sm font-medium">{formatISTDate(dueDate)}</p>
+                <p className="text-xs text-muted-foreground">{formatISTTime(dueDate)}</p>
                 {isOverdue && (
                   <div className="mt-4 flex items-start gap-2 text-destructive text-sm">
                     <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />

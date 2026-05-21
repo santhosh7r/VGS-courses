@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { formatISTDate } from '@/lib/date-utils'
 
 export default function SubmissionList({
   submissions,
@@ -29,7 +29,7 @@ export default function SubmissionList({
                 <div className="sm:text-right shrink-0">
                   <p className="text-xs sm:text-sm text-muted-foreground">Submitted</p>
                   <p className="text-sm font-medium">
-                    {format(new Date(submission.submitted_at), 'MMM dd, yyyy')}
+                    {formatISTDate(submission.submitted_at)}
                   </p>
                 </div>
               </div>

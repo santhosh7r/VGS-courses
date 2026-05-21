@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
-import { format } from 'date-fns'
+import { formatISTDateTime } from '@/lib/date-utils'
 import GradeForm from '@/components/admin/grade-form'
 
 interface PageProps {
@@ -58,7 +58,7 @@ export default async function GradeSubmissionPage({ params }: PageProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-xs text-muted-foreground">
-                Submitted {format(new Date(submission.submitted_at), 'MMM dd, yyyy · hh:mm a')}
+                Submitted {formatISTDateTime(submission.submitted_at)}
                 {' · '}status: <span className="font-medium">{submission.status}</span>
               </p>
 

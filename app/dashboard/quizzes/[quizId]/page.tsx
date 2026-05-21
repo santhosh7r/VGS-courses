@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import QuizTaker from '@/components/dashboard/quiz-taker'
 import QuizReview from '@/components/dashboard/quiz-review'
-import { format } from 'date-fns'
+import { formatISTDateTime } from '@/lib/date-utils'
 
 interface PageProps {
   params: Promise<{ quizId: string }>
@@ -85,7 +85,7 @@ export default async function TakeQuizPage({ params }: PageProps) {
         {attempt ? (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Completed {format(new Date(attempt.completed_at), 'MMM dd, yyyy · hh:mm a')} ·
+              Completed {formatISTDateTime(attempt.completed_at)} ·
               you can review your answers below.
             </p>
             <QuizReview

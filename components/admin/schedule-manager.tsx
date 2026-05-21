@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
-import { format } from 'date-fns'
+import { formatISTWeekdayDateTime, fromISTDateTimeLocalInput } from '@/lib/date-utils'
 import { cn } from '@/lib/utils'
 import { Trash, CalendarClock, GraduationCap, ClipboardList, Video } from 'lucide-react'
 
@@ -70,8 +70,8 @@ export default function ScheduleManager({
         title: form.title.trim(),
         description: form.description || null,
         event_type: form.event_type,
-        starts_at: new Date(form.starts_at).toISOString(),
-        ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
+        starts_at: fromISTDateTimeLocalInput(form.starts_at),
+        ends_at: form.ends_at ? fromISTDateTimeLocalInput(form.ends_at) : null,
       })
       .select()
       .single()
@@ -192,7 +192,7 @@ export default function ScheduleManager({
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate">{ev.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(ev.starts_at), 'EEE, MMM dd · hh:mm a')}
+                          {formatISTWeekdayDateTime(ev.starts_at)}
                         </p>
                         {ev.description && (
                           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">

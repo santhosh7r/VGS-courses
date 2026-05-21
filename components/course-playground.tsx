@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { format } from 'date-fns'
+import { formatISTTime } from '@/lib/date-utils'
 import {
   Send, ClipboardList, Megaphone, CheckCircle2, Trash2, Wifi, WifiOff,
   ExternalLink, Users, Loader2,
@@ -345,7 +345,7 @@ function MessageRow({
             </span>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-            <span>{format(new Date(message.created_at), 'h:mm a')}</span>
+            <span>{formatISTTime(message.created_at)}</span>
             {(role === 'admin' || isMine) && (
               <button
                 onClick={deleteMessage}
@@ -376,7 +376,7 @@ function MessageRow({
             </span>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-            <span>{format(new Date(message.created_at), 'h:mm a')}</span>
+            <span>{formatISTTime(message.created_at)}</span>
             {(role === 'admin' || isMine) && (
               <button
                 onClick={deleteMessage}
@@ -413,7 +413,7 @@ function MessageRow({
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>
                     Marked done at{' '}
-                    {format(new Date(myCompletion.completed_at), 'h:mm a')}
+                    {formatISTTime(myCompletion.completed_at)}
                     {myCompletion.response && (
                       <span className="block text-xs text-muted-foreground mt-1 break-words">
                         “{myCompletion.response}”
@@ -471,7 +471,7 @@ function MessageRow({
                   </span>
                   <span className="text-muted-foreground">
                     {' · '}
-                    {format(new Date(c.completed_at), 'h:mm a')}
+                    {formatISTTime(c.completed_at)}
                   </span>
                   {c.response && (
                     <p className="break-words text-foreground/90">{c.response}</p>
@@ -510,7 +510,7 @@ function MessageRow({
               Admin
             </Badge>
           )}
-          <span>{format(new Date(message.created_at), 'h:mm a')}</span>
+          <span>{formatISTTime(message.created_at)}</span>
         </div>
         <p className="text-sm whitespace-pre-wrap break-words">{message.body}</p>
       </div>

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ChevronRight, CheckCircle2, XCircle } from 'lucide-react'
-import { format } from 'date-fns'
+import { formatISTDate } from '@/lib/date-utils'
 
 interface ResultQuestion {
   question: string
@@ -97,7 +97,7 @@ export default function QuizResults({
                     <span className="min-w-0">
                       <span className="font-medium block truncate">{a.student_name}</span>
                       <span className="text-xs text-muted-foreground block truncate">
-                        {a.student_email} · {format(new Date(a.completed_at), 'MMM dd, yyyy')}
+                        {a.student_email} · {formatISTDate(a.completed_at)}
                       </span>
                     </span>
                   </span>

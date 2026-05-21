@@ -3,7 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import {
+  formatISTDate,
+  formatISTFullDateTime,
+  formatISTShortDateTime,
+  getISTDateKey,
+} from '@/lib/date-utils'
 import { ArrowLeft, Zap, Flame, Award, Activity, BookOpen } from 'lucide-react'
 import StudentCourseAssigner from '@/components/admin/student-course-assigner'
 import StudentStatusToggle from '@/components/admin/student-status-toggle'
@@ -88,7 +93,7 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
   const activeDays = new Set(
     acts
       .filter((a: any) => new Date(a.created_at).getTime() >= cutoff)
-      .map((a: any) => new Date(a.created_at).toISOString().slice(0, 10))
+      .map((a: any) => getISTDateKey(a.created_at))
   ).size
   const consistency = Math.round((activeDays / 30) * 100)
 
@@ -129,9 +134,9 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
           </div>
           <p className="text-muted-foreground mt-1 break-all">{student.email}</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Joined {format(new Date(student.created_at), 'MMM dd, yyyy')} ·{' '}
+            Joined {formatISTDate(student.created_at)} ·{' '}
             {student.last_active_at
-              ? `last active ${format(new Date(student.last_active_at), 'MMM dd, yyyy')}`
+              ? `last active ${formatISTDate(student.last_active_at)}`
               : 'never active'}
           </p>
         </div>
@@ -206,7 +211,7 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
                         {a.xp_delta > 0 && (
                           <span className="text-yellow-600">+{a.xp_delta} XP</span>
                         )}
-                        {format(new Date(a.created_at), 'MMM dd, hh:mm a')}
+                        {formatISTShortDateTime(a.created_at)}
                       </span>
                     </div>
                   ))}
@@ -231,7 +236,7 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
                       key={a.id}
                       className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 text-sm border-b border-border last:border-0 py-2"
                     >
-                      <span>{format(new Date(a.created_at), 'EEE, MMM dd yyyy · hh:mm a')}</span>
+                      <span>{formatISTFullDateTime(a.created_at)}</span>
                       <span className="text-xs sm:text-sm text-muted-foreground">
                         {a.detail?.device || '—'}
                       </span>
@@ -263,7 +268,7 @@ export default async function AdminStudentDetailPage({ params }: PageProps) {
                       </span>
                       <span className="flex items-center gap-3 shrink-0">
                         <span className="text-xs sm:text-sm text-muted-foreground">
-                          {format(new Date(s.submitted_at), 'MMM dd, yyyy')}
+                          {formatISTDate(s.submitted_at)}
                         </span>
                         <span
                           className={`text-xs uppercase px-1.5 py-0.5 rounded ${

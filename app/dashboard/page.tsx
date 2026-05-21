@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { formatISTDate } from '@/lib/date-utils'
 import {
   Zap, Flame, Trophy, BookOpen, Award, ArrowRight, Target, ClipboardList,
 } from 'lucide-react'
@@ -217,7 +217,7 @@ export default async function DashboardPage() {
                           <p className="font-medium text-sm">{a.title}</p>
                           {a.due_date && (
                             <p className="text-xs text-muted-foreground">
-                              Due {format(new Date(a.due_date), 'MMM dd, yyyy')}
+                              Due {formatISTDate(a.due_date)}
                             </p>
                           )}
                         </div>
